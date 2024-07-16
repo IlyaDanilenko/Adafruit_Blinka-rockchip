@@ -75,8 +75,8 @@ class PWMOut:
     def _open(self, pwm, frequency, duty_cycle, variable_frequency):
         for pwmout in pwmOuts:
             if pwmout[1] == pwm:
-                self._chip = pwmout[0][0]
-                self._channel = pwmout[0][1]
+                self._chip = pwmout[0][1]
+                self._channel = pwmout[0][0]
 
         self._chip_path = os.path.join(
             "/sys/class/pwm", self._chip_path.format(self._chip)
@@ -311,18 +311,20 @@ class PWMOut:
         if not isinstance(duty_cycle, (int, float)):
             raise TypeError("Invalid duty cycle type, should be int or float.")
 
-        if not 0.0 <= duty_cycle <= 1.0:
-            raise ValueError("Invalid duty cycle value, should be between 0.0 and 1.0.")
+        if not 0.0 <= duty_cycle <= 65535.0:
+            raise ValueError("Invalid duty cycle value, should be between 0.0 and 65535.0.")
+
+        duty_cycle /= 65535.0
 
         # Convert duty cycle from ratio to nanoseconds
         self.duty_cycle_ns = int(duty_cycle * self._period_ns)
 
     duty_cycle = property(_get_duty_cycle, _set_duty_cycle)
-    """Get or set the PWM's output duty cycle as a ratio from 0.0 to 1.0.
+    """Get or set the PWM's output duty cycle as a ratio from 0.0 to 65535.0.
     Raises:
         PWMError: if an I/O or OS error occurs.
         TypeError: if value type is not int or float.
-        ValueError: if value is out of bounds of 0.0 to 1.0.
+        ValueError: if value is out of bounds of 0.0 to 65535.0.
     :type: int, float
     """
 
